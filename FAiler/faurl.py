@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-from datetime import datetime
 import re
 import os
 import urllib2
-from FAiler.exceptions import FAError, FAAuth
 import FAiler
+from datetime import datetime
 from bs4 import BeautifulSoup
 from mechanize import Browser
+from FAiler.exceptions import FAError, FAAuth
 
 
 class FAUrl():
