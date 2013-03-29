@@ -87,16 +87,22 @@ class FAUrl():
         if self.rating == 'General rating':
             self.sfw = True
 
+        # Parse out title
+        self.title = soup.find(
+            'img', id="submissionImg").get('alt')
+
         # TODO Parse out keywords
         keywordsRe = re.compile(r"/search/@keywords (\w+)")
         # TODO Parse out submission information
-        # TODO Parse out Long Description
 
     def __repr__(self):
         return self.link
 
     def __str__(self):
         return str(self.link)
+
+    def get_title(self):
+        return self.title
 
     def get_link(self):
         return self.link
@@ -136,20 +142,26 @@ class FAUrl():
     def is_safe_for_work(self):
         return self.sfw
 
-    def download_submission(self, directory):
+    def get_faile(self):
+        return FAiler.FAile(self.submissionName)
+
+    def download_submission(self, directory, filename=None):
         """
-        Downloads the submitted FA art to the supplies directory and returns
-         a FAile object for the downloaded file
+        Downloads the submitted FA art to the supplies directory optionally
+         with an alternite filename
 
         :param directory: Directory to write file to.
+        :param filename: Name of file to save to. If None uses FA filename
 
         :raises: IOError if it cannot write to directory
         :raises: urllib2.HTTPError if FA is down
         """
-        with open(os.path.join(directory, self.submissionName), 'w') as f:
+        if filename is None:
+            filename = self.submissionName
+        filepath = os.path.join(directory, filename)
+        with open(filepath, 'w') as f:
             request = urllib2.urlopen(self.artLink)
             f.write(request.read())
-        return FAiler.FAile(os.path.join(directory, self.submissionName))
 
     def get_browser(self):
         """
