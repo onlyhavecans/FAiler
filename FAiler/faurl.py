@@ -71,13 +71,19 @@ class FAUrl():
         soup = BeautifulSoup(br.open(self.link))
 
         # Parse out raw link
-        link = soup.find('a', text=re.compile(r" Download")).get('href')
+        rawRe = re.compile(r" Download")
+        try:
+            link = soup.find('a', text=rawRe).get('href')
+        except AttributeError:
+            raise FAError("""Pulling facdn failed.
+                          Are you not logged in or is this blocked?
+                          Page Dump;""" + str(soup))
         self.artLink = 'http:' + link
         match = re.match(self._FACDN_RE, self.artLink)
         try:
             (self.artist, self.category, self.date) = match.group(1, 2, 3)
             self.submissionName = match.expand(r"\3.\4_\5.\6")
-        except AttributeError as e:
+        except AttributeError:
             raise FAError('Could not parse facdn url ' + self.artLink)
 
         # Parse out SFW rating
