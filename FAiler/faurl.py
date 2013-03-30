@@ -97,8 +97,10 @@ class FAUrl():
         self.title = soup.find(
             'img', id="submissionImg").get('alt')
 
-        # TODO Parse out keywords
-        keywordsRe = re.compile(r"/search/@keywords (\w+)")
+        # Parse out keywords
+        keysRe = re.compile("/search/@keywords.*")
+        self.keywords = [x.string for x in soup.find_all('a', href=keysRe)]
+
         # TODO Parse out submission information
 
     def __repr__(self):
@@ -124,6 +126,12 @@ class FAUrl():
         :return: datetime object
         """
         return datetime.fromtimestamp(self.date)
+
+    def get_keywords(self):
+        """
+        :return: Array of keywords
+        """
+        return self.keywords
 
     def get_category(self):
         """
