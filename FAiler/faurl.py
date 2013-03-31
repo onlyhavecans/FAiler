@@ -70,7 +70,7 @@ class FAUrl():
         br = self.get_browser()
         soup = BeautifulSoup(br.open(self.link))
 
-        # Parse out raw link
+        # Parse out raw art link FACDN
         rawRe = re.compile(r" Download")
         try:
             link = soup.find('a', text=rawRe).get('href')
