@@ -42,7 +42,7 @@ class FAile():
         parsedName = re.match(self._FILE_RE, self.filename)
         if parsedName is None:
             raise FAError("Unable to parse file name: " + self.filename)
-        (self.date, self.artist, self.name, self.fileType) = parsedName.groups()
+        self.date, self.artist, self.name, self.fileType = parsedName.groups()
         self.date = datetime.fromtimestamp(int(self.date))
 
     def __repr__(self):
@@ -70,5 +70,5 @@ class FAile():
         check = re.match(self._FILE_RE,
                          "{0.name}.{0.fileType}".format(self))
         if check is not None:
-            (self.date, self.artist, self.name) = check.group(1, 2, 3)
+            self.date, self.artist, self.name = check.group(1, 2, 3)
             self.date = datetime.fromtimestamp(int(self.date))

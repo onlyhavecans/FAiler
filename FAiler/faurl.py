@@ -81,7 +81,7 @@ class FAUrl():
         self.artLink = 'http:' + link
         match = re.match(self._FACDN_RE, self.artLink)
         try:
-            (self.artist, self.category, self.date) = match.group(1, 2, 3)
+            self.artist, self.category, self.date = match.group(1, 2, 3)
             self.submissionName = match.expand(r"\3.\4_\5.\6")
         except AttributeError:
             raise FAError('Could not parse facdn url ' + self.artLink)
