@@ -25,13 +25,11 @@ class FAUrl():
     TEXTUAL_TYPE = 2
     AUDIO_TYPE = 3
 
-    _SUBMISSION_RE = re.compile(
-        r"https?://www\.furaffinity\.net/(view|full)/(?P<number>\d+)/")
     #Sorry for the regexp
     _FACDN_RE = re.compile(r"""https?://d\.facdn\.net/art/      # Leader
                               (?P<user>[\w\[\]~.-]+?)           # User
                               (?P<category>/stories/|/music/|/) # category
-                              (?P<date>\d+)\.                 # FAile.FILE_RE
+                              (?P<date>\d+)\.                 # FAile
                               (?P<useragain>[\w\[\]~.-]+?)_
                               (?P<name>\S+)\.
                               (?P<ext>\w{2,4})""", re.VERBOSE)
@@ -60,17 +58,19 @@ class FAUrl():
         self._username = username
         self._password = password
         self._br = br
-        if re.match(self._SUBMISSION_RE, submissionUrl):
-            self.link = submissionUrl
-            self.number = re.match(
-                self._SUBMISSION_RE, submissionUrl).group('number')
-        else:
+
+        submissionRe = re.compile(
+            r"https?://www\.furaffinity\.net/(view|full)/(?P<number>\d+)/")
+        submissionMatch = re.match(submissionRe, submissionUrl)
+        if submissionMatch is None:
             raise FAError("Unsupported/Unparseable URL")
 
+        self.link = submissionUrl
+        self.number = submissionMatch.group('number')
         br = self.get_browser()
         soup = BeautifulSoup(br.open(self.link))
 
-        # Parse out raw art link FACDN
+        # Parse out FACDN submission link
         rawRe = re.compile(r" Download")
         try:
             link = soup.find('a', text=rawRe).get('href')
@@ -79,6 +79,8 @@ class FAUrl():
                           Are you not logged in or is this blocked?
                           Page Dump;""" + str(soup))
         self.artLink = 'http:' + link
+
+        # Parse out info from FACDN
         match = re.match(self._FACDN_RE, self.artLink)
         try:
             self.artist, self.category, self.date = match.group(1, 2, 3)
@@ -94,8 +96,7 @@ class FAUrl():
             self.sfw = True
 
         # Parse out title
-        self.title = soup.find(
-            'img', id="submissionImg").get('alt')
+        self.title = soup.find('img', id="submissionImg").get('alt')
 
         # Parse out keywords
         keysRe = re.compile("/search/@keywords.*")
@@ -104,7 +105,7 @@ class FAUrl():
         # TODO Parse out submission information
 
     def __repr__(self):
-        return self.link
+        return str(self.link)
 
     def __str__(self):
         return str(self.link)

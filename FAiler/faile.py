@@ -41,7 +41,13 @@ class FAile():
 
     def __repr__(self):
         """
-        :return: the original filename as a string
+        :return: the filename as a string
+        """
+        return str(self.filename)
+
+    def __str__(self):
+        """
+        :return: the filename as a string
         """
         return str(self.filename)
 
