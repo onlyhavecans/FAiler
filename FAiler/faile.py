@@ -28,8 +28,6 @@ class FAile():
     name = None
     fileType = None
 
-    _FILE_RE = re.compile(r'(\d+)\.([\w\[\]~.-]+?)_(\S+)\.(\w{2,4})')
-
     def __init__(self, faFile):
         """
         This accepts both a standard name or with path to file.
@@ -39,17 +37,26 @@ class FAile():
         """
         self.directory = os.path.dirname(faFile)
         self.filename = os.path.basename(faFile)
-        parsedName = re.match(self._FILE_RE, self.filename)
-        if parsedName is None:
-            raise FAError("Unable to parse file name: " + self.filename)
-        self.date, self.artist, self.name, self.fileType = parsedName.groups()
-        self.date = datetime.fromtimestamp(int(self.date))
+        self._parse_name(self.filename)  # Raises on fail
 
     def __repr__(self):
         """
         :return: the original filename as a string
         """
         return str(self.filename)
+
+    def _parse_name(self, name):
+        """
+        Don't repeat yourself.
+        This assigns everything from the filename and raises FAError on fail
+        :raises: FAError if name does not parse
+        """
+        faRe = re.compile(r'(\d+)\.([\w\[\]~.-]+?)_(\S+)\.(\w{2,4})')
+        parsed = re.match(faRe, name)
+        if parsed is None:
+            raise FAError("Unable to parse file name: " + name)
+        self.date, self.artist, self.name, self.fileType = parsed.groups()
+        self.date = datetime.fromtimestamp(int(self.date))
 
     def clean_reupload(self):
         """
@@ -67,8 +74,7 @@ class FAile():
         >>> "{0.artist} - {0.name}.{0.fileType}".format(f2)
         'furball - shim_bday2013.jpg'
         """
-        check = re.match(self._FILE_RE,
-                         "{0.name}.{0.fileType}".format(self))
-        if check is not None:
-            self.date, self.artist, self.name = check.group(1, 2, 3)
-            self.date = datetime.fromtimestamp(int(self.date))
+        try:
+            self._parse_name("{0.name}.{0.fileType}".format(self))
+        except FAError:
+            pass  # We don't care if parse fails this time around
