@@ -25,15 +25,6 @@ class FAUrl():
     TEXTUAL_TYPE = 2
     AUDIO_TYPE = 3
 
-    #Sorry for the regexp
-    _FACDN_RE = re.compile(r"""https?://d\.facdn\.net/art/      # Leader
-                              (?P<user>[\w\[\]~.-]+?)           # User
-                              (?P<category>/stories/|/music/|/) # category
-                              (?P<date>\d+)\.                 # FAile
-                              (?P<useragain>[\w\[\]~.-]+?)_
-                              (?P<name>\S+)\.
-                              (?P<ext>\w{2,4})""", re.VERBOSE)
-
     def __init__(self, submissionUrl, username=None, password=None, br=None):
         """
         The object needs a furaffinity submission link.
@@ -81,7 +72,16 @@ class FAUrl():
         self.artLink = 'http:' + link
 
         # Parse out info from FACDN
-        match = re.match(self._FACDN_RE, self.artLink)
+        # Sorry for the regexp
+        facdnRe = re.compile(r"""https?://d\.facdn\.net/art/      # Leader
+                                (?P<user>[\w\[\]~.-]+?)           # User
+                                (?P<category>/stories/|/music/|/) # category
+                                (?P<date>\d+)\.                   # FAile
+                                (?P<useragain>[\w\[\]~.-]+?)_
+                                (?P<name>\S+)\.
+                                (?P<ext>\w{2,4})""", re.VERBOSE)
+
+        match = re.match(facdnRe, self.artLink)
         try:
             self.artist, self.category, self.date = match.group(1, 2, 3)
             self.submissionName = match.expand(r"\3.\4_\5.\6")
