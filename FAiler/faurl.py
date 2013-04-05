@@ -46,7 +46,6 @@ class FAUrl():
 
         :raise: FAError if the url is not recognizable or FA fails
         :raise: FAAuth if username & password is bad
-        :raise: urllib2.HTTPError when FA is down
         """
         self._username = username
         self._password = password
@@ -61,16 +60,19 @@ class FAUrl():
         self.link = submissionUrl
         self.number = submissionMatch.group('number')
         br = self.get_browser()
-        soup = BeautifulSoup(br.open(self.link))
+        try:
+            soup = BeautifulSoup(br.open(self.link))
+        except urllib2.HTTPError:
+            raise FAError("FA's down, F5 time.")
+        if soup.find('div', id="submission") is None:
+            raise FAAuth("Submission blocked. Please login")
 
         # Parse out FACDN submission link
         rawRe = re.compile(r" Download")
         try:
             link = soup.find('a', text=rawRe).get('href')
         except AttributeError:
-            raise FAError("""Pulling facdn failed.
-                          Are you not logged in or is this blocked?
-                          Page Dump;""" + str(soup))
+            raise FAError("Pulling facdn failed. Parsing Failure")
         self.artLink = 'http:' + link
 
         # Parse out info from FACDN
@@ -176,13 +178,16 @@ class FAUrl():
         :param filename: Name of file to save to. If None uses FA filename
 
         :raises: IOError if it cannot write to directory
-        :raises: urllib2.HTTPError if FA is down
+        :raises: FAError if we cannot connect to FA
         """
         if filename is None:
             filename = self.submissionName
         filepath = os.path.join(directory, filename)
-        with open(filepath, 'w') as f:
+        try:
             request = urllib2.urlopen(self.artLink)
+        except urllib2.HTTPError:
+            raise FAError("FA's down, F5 time.")
+        with open(filepath, 'w') as f:
             f.write(request.read())
 
     def get_browser(self):
@@ -192,7 +197,7 @@ class FAUrl():
          authenticate you.
 
         :return: mechanize.Browser instance.
-        :raise: urllib2.HTTPError if FA is down. Time to F5!
+        :raise: FAiler.FAError if FA is down. Time to F5!
         :raise: FAiler.FAAuth Your username and password failed
         """
         if self._br is None:
@@ -204,7 +209,10 @@ class FAUrl():
             br.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
             if self._username is not None and self._password is not None:
                 loginPage = 'https://www.furaffinity.net/login'
-                br.open(loginPage)
+                try:
+                    br.open(loginPage)
+                except urllib2.HTTPError:
+                    raise FAError("FA's down, F5 time.")
                 br.form = br.global_form()
                 br.form['name'] = self._username
                 br.form['pass'] = self._password
