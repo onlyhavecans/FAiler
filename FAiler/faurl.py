@@ -105,7 +105,12 @@ class FAUrl():
         # TODO Parse out submission information
 
     def __repr__(self):
-        return str(self.link)
+        call = [self.link]
+        if self._username is not None:
+            call.append("username={}".format(self._username))
+        if self._password is not None:
+            call.append("password={}".format(self._password))
+        return "FAUrl({})".format(", ".join(call))
 
     def __str__(self):
         return str(self.link)

@@ -40,10 +40,7 @@ class FAile():
         self._parse_name(self.filename)  # Raises on fail
 
     def __repr__(self):
-        """
-        :return: the filename as a string
-        """
-        return str(self.filename)
+        return 'FAile({})'.format(os.path.join(self.directory, self.filename))
 
     def __str__(self):
         """
