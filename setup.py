@@ -12,7 +12,7 @@ README = open('README.md').read()
 
 setup(
     name='FAiler',
-    version='0.1.0',
+    version='0.2.0',
     description="FurAffinity Helper Library",
     url='http://github.com/tbunnyman/failer',
     author='David Aronsohn',
